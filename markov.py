@@ -2,18 +2,25 @@
 
 from random import choice
 
+import sys
 
-def open_and_read_file(file_path):
+input_path = sys.argv[1]
+
+def open_and_read_file(file_path=input_path):
     """Take file path as string; return text as string.
 
     Takes a string that is a file path, opens the file, and turns
     the file's contents as one string of text.
     """
 
-    # your code goes here
+    # open file
+    with open(file_path) as file:
 
-    return 'Contents of your file as one long string'
+        # add everything in file to text as one string
+        text = file.read()
 
+    # return string of all the text
+    return text
 
 def make_chains(text_string):
     """Take input text as string; return dictionary of Markov chains.
@@ -40,27 +47,69 @@ def make_chains(text_string):
         [None]
     """
 
+    # create list of words, splitting text string at each whitespace
+    words = text_string.split()
+    # print(words)
+
+    # create empty dictionary
     chains = {}
 
-    # your code goes here
+    # iterate over index values
+    for i in range(len(words) - 2):
 
+        # define first, second, and third words
+        first_word = words[i]
+        second_word = words[i+1]
+        third_word = words[i+2]
+
+        # create tuple from first and second word
+        pair = (first_word, second_word)
+
+        # create tuple: next word dict entry. initialize list if tuple is new, add third word to list.
+        chains[pair] = chains.get(pair, []) + [third_word]
+    
+    # return the chains dictionary
     return chains
 
 
 def make_text(chains):
     """Return text from chains."""
 
+    # initialize blank words list
     words = []
 
-    # your code goes here
+    # Get first and second word / get first tuple
+    for key in chains:
+        first_word = key[0]
+        second_word = key[1]
+        words.extend([first_word, second_word])
+        break
+    
+    # get tuple key from last two words in list
+    
+    # psuedocode
+    # use the second word and a random word from the key's value to make a new tuple (second_word, random_value_word)
+    # repeat this over and over until we get to the end
 
-    return ' '.join(words)
+    while True:
+        # find random next word by using previous two words as tuple and next word from values
+        random_value_word = choice(chains[(first_word, second_word)])
+        
+        # reassign first and second word values
+        first_word = second_word
+        second_word = random_value_word
+
+        # add new second word to 'words' list
+        words.extend([second_word])
+        print(words)
+        break
+
+    return #' '.join(words)
 
 
-input_path = 'green-eggs.txt'
 
 # Open the file and turn it into one long string
-input_text = open_and_read_file(input_path)
+input_text = open_and_read_file()
 
 # Get a Markov chain
 chains = make_chains(input_text)
