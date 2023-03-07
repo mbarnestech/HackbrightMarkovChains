@@ -1,1 +1,1 @@
-test.
+Pair programming exercise for Hackbright Academy; coded with Christian Rodriguez Ochoa.
