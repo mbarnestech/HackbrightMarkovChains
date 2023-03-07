@@ -1,12 +1,13 @@
 """Generate Markov text from text files."""
 
-from random import choice
+from random import choice, randint
 
 import sys
 
 input_path = sys.argv[1]
+input_path2 = sys.argv[2]
 
-def open_and_read_file(file_path=input_path):
+def open_and_read_file(file_path=input_path, file_path2=input_path2):
     """Take file path as string; return text as string.
 
     Takes a string that is a file path, opens the file, and turns
@@ -18,6 +19,11 @@ def open_and_read_file(file_path=input_path):
 
         # add everything in file to text as one string
         text = file.read()
+
+    with open(file_path2) as file:
+
+        # add everything in file to text as one string
+        text = text + file.read()[:300]
 
     # return string of all the text
     return text
@@ -46,28 +52,30 @@ def make_chains(text_string):
         >>> chains[('there','juanita')]
         [None]
     """
+    n = int(input('How many words do you want in your n-gram? Use an integer: '))
 
     # create list of words, splitting text string at each whitespace
     words = text_string.split()
-    # print(words)
 
     # create empty dictionary
     chains = {}
 
     # iterate over index values
-    for i in range(len(words) - 2):
+    for i in range(len(words) - n):
 
-        # define first, second, and third words
-        first_word = words[i]
-        second_word = words[i+1]
-        third_word = words[i+2]
+        # define n number of items in tuple
+        tuple_list = []
+        for j in range(n):
+            nth_word = words[i + j]
+            tuple_list.append(nth_word)
 
-        # create tuple from first and second word
-        pair = (first_word, second_word)
+        ngram = tuple(tuple_list)
+        list_word = words[i + n] 
 
-        # create tuple: next word dict entry. initialize list if tuple is new, add third word to list.
-        chains[pair] = chains.get(pair, []) + [third_word]
+        # create tuple: next word dict entry. initialize list if tuple is new, add list word to list.
+        chains[ngram] = chains.get(ngram, []) + [list_word]
     
+    print(chains)
     # return the chains dictionary
     return chains
 
@@ -78,34 +86,70 @@ def make_text(chains):
     # initialize blank words list
     words = []
 
-    # Get first and second word / get first tuple
-    for key in chains:
-        first_word = key[0]
-        second_word = key[1]
-        words.extend([first_word, second_word])
-        break
-    
-    # get tuple key from last two words in list
-    
-    # psuedocode
-    # use the second word and a random word from the key's value to make a new tuple (second_word, random_value_word)
-    # repeat this over and over until we get to the end
+    # Get first tuple
+    # for key in chains:
+    #     ngram = key
+    #     words.extend(list(ngram))
+    #     break
 
+    # Get random first tuple starting with a capital letter 
+    while True: 
+
+        # use choice to get random tuple from chains
+        ngram = choice(list(chains))
+
+        # check if first letter of first word in tuple is uppercase
+        if ngram[0][0].isupper():
+
+            # add tuple to the words list
+            words.extend(list(ngram))
+
+            # leave the while loop
+            break
+    
     while True:
-        # find random next word by using previous two words as tuple and next word from values
-        random_value_word = choice(chains[(first_word, second_word)])
         
-        # reassign first and second word values
-        first_word = second_word
-        second_word = random_value_word
+        # if (1st word, 2nd word) tuple exists in chains
+        if ngram in chains:
 
-        # add new second word to 'words' list
-        words.extend([second_word])
-        print(words)
-        break
+            # find random next word by using previous two words as tuple and next word from values
+            random_value_word = choice(chains[ngram])
+            
+            # add the random word to 'words' list
+            words.append(random_value_word)
 
-    return #' '.join(words)
+            # create empty list for reassigning tuples
+            tuple_list = []
 
+            # loop through index values for ngram tuple
+            for i in range(len(ngram)):
+
+                # if i is any index but the final index
+                if i < len(ngram) - 1:
+
+                    # reassign tuple value, move value by one
+                    tuple_list.append(ngram[i+1])
+
+                # if i is the final index value
+                else:
+
+                    # make last value in tuple the new word
+                    tuple_list.append(random_value_word)
+            
+            # make a tuple out of the list
+            ngram = tuple(tuple_list)
+            
+            # if last character of last word in ngram is a punctuation mark, randomly choose whether to break out of while loop
+            if ngram[-1][-1] in (".", "?", "!"):
+                x = randint(0,1)
+                if x == 0:
+                    break
+        
+        # else break out of loop
+        else: 
+            break
+
+    return ' '.join(words)
 
 
 # Open the file and turn it into one long string
